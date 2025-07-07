@@ -139,6 +139,8 @@ def models(request, research_agent):
 @pytest.mark.langsmith
 def test_response_criteria_evaluation(research_agent, search_api, models, eval_model):
     """Test if a report meets the specified quality criteria."""
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        pytest.skip("ANTHROPIC_API_KEY not set")
     console.print(Panel.fit(
         f"[bold blue]Testing {research_agent} report generation with {search_api} search[/bold blue]",
         title="Test Configuration"
