@@ -1,51 +1,48 @@
-import os
 import asyncio
-import json
-import datetime
-import requests
-import random 
 import concurrent
+import datetime
 import hashlib
+import itertools
+import json
+import os
+import random
+import time
+from collections import defaultdict
+from typing import Annotated, Any, Dict, List, Literal, Optional, Union, cast
+from urllib.parse import unquote
+
 import aiohttp
 import httpx
-import time
-from typing import List, Optional, Dict, Any, Union, Literal, Annotated, cast
-from urllib.parse import unquote
-from collections import defaultdict
-import itertools
-
-from exa_py import Exa
-from linkup import LinkupClient
-from tavily import AsyncTavilyClient
+import requests
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.aio import SearchClient as AsyncAzureAISearchClient
-from duckduckgo_search import DDGS 
 from bs4 import BeautifulSoup
-from markdownify import markdownify
-from pydantic import BaseModel
+from duckduckgo_search import DDGS
+from exa_py import Exa
 from langchain.chat_models import init_chat_model
 from langchain.embeddings import init_embeddings
-from langchain_core.documents import Document
-from langchain_core.embeddings import Embeddings
-from langchain_anthropic import ChatAnthropic
-from langchain_core.language_models import BaseChatModel
-from langchain_core.runnables import RunnableConfig
-from langchain_core.tools import InjectedToolArg
-from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_community.retrievers import ArxivRetriever
 from langchain_community.utilities.pubmed import PubMedAPIWrapper
-from langchain_core.tools import tool
+from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
+from langchain_core.language_models import BaseChatModel
+from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import InjectedToolArg, tool
+from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langsmith import traceable
+from linkup import LinkupClient
+from markdownify import markdownify
+from pydantic import BaseModel
+from tavily import AsyncTavilyClient
 
 from open_deep_research.configuration import Configuration
-from open_deep_research.state import Section
 from open_deep_research.prompts import SUMMARIZATION_PROMPT
+from open_deep_research.state import Section
 
 
 def get_config_value(value):
-    """
-    Helper function to handle string, dict, and enum cases of configuration values
+    """Helper function to handle string, dict, and enum cases of configuration values
     """
     if isinstance(value, str):
         return value
@@ -55,8 +52,7 @@ def get_config_value(value):
         return value.value
 
 def get_search_params(search_api: str, search_api_config: Optional[Dict[str, Any]]) -> Dict[str, Any]:
-    """
-    Filters the search_api_config dictionary to include only parameters accepted by the specified search API.
+    """Filters the search_api_config dictionary to include only parameters accepted by the specified search API.
 
     Args:
         search_api (str): The search API identifier (e.g., "exa", "tavily").
@@ -92,8 +88,7 @@ def deduplicate_and_format_sources(
     include_raw_content=True,
     deduplication_strategy: Literal["keep_first", "keep_last"] = "keep_first"
 ):
-    """
-    Takes a list of search responses and formats them into a readable string.
+    """Takes a list of search responses and formats them into a readable string.
     Limits the raw_content to approximately max_tokens_per_source tokens.
  
     Args:
@@ -151,7 +146,7 @@ def deduplicate_and_format_sources(
     return formatted_text.strip()
 
 def format_sections(sections: list[Section]) -> str:
-    """ Format a list of sections into a string """
+    """Format a list of sections into a string"""
     formatted_str = ""
     for idx, section in enumerate(sections, 1):
         formatted_str += f"""
@@ -171,8 +166,7 @@ Content:
 
 @traceable
 async def tavily_search_async(search_queries, max_results: int = 5, topic: Literal["general", "news", "finance"] = "general", include_raw_content: bool = True):
-    """
-    Performs concurrent web searches with the Tavily API
+    """Performs concurrent web searches with the Tavily API
 
     Args:
         search_queries (List[str]): List of search queries to process
@@ -217,8 +211,7 @@ async def tavily_search_async(search_queries, max_results: int = 5, topic: Liter
 
 @traceable
 async def azureaisearch_search_async(search_queries: list[str], max_results: int = 5, topic: str = "general", include_raw_content: bool = True) -> list[dict]:
-    """
-    Performs concurrent web searches using the Azure AI Search API.
+    """Performs concurrent web searches using the Azure AI Search API.
 
     Args:
         search_queries (List[str]): list of search queries to process
@@ -301,7 +294,6 @@ def perplexity_search(search_queries):
                 ]
             }
     """
-
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
@@ -342,7 +334,7 @@ def perplexity_search(search_queries):
         
         # First citation gets the full content
         results.append({
-            "title": f"Perplexity Search, Source 1",
+            "title": "Perplexity Search, Source 1",
             "url": citations[0],
             "content": content,
             "raw_content": content,
@@ -575,8 +567,7 @@ async def exa_search(search_queries, max_characters: Optional[int] = None, num_r
 
 @traceable
 async def arxiv_search_async(search_queries, load_max_docs=5, get_full_documents=True, load_all_available_meta=True):
-    """
-    Performs concurrent searches on arXiv using the ArxivRetriever.
+    """Performs concurrent searches on arXiv using the ArxivRetriever.
 
     Args:
         search_queries (List[str]): List of search queries or article IDs
@@ -732,8 +723,7 @@ async def arxiv_search_async(search_queries, load_max_docs=5, get_full_documents
 
 @traceable
 async def pubmed_search_async(search_queries, top_k_results=5, email=None, api_key=None, doc_content_chars_max=4000):
-    """
-    Performs concurrent searches on PubMed using the PubMedAPIWrapper.
+    """Performs concurrent searches on PubMed using the PubMedAPIWrapper.
 
     Args:
         search_queries (List[str]): List of search queries
@@ -880,8 +870,7 @@ async def pubmed_search_async(search_queries, top_k_results=5, email=None, api_k
 
 @traceable
 async def linkup_search(search_queries, depth: Optional[str] = "standard"):
-    """
-    Performs concurrent web searches using the Linkup API.
+    """Performs concurrent web searches using the Linkup API.
 
     Args:
         search_queries (List[SearchQuery]): List of search queries to process
@@ -926,8 +915,7 @@ async def linkup_search(search_queries, depth: Optional[str] = "standard"):
 
 @traceable
 async def google_search_async(search_queries: Union[str, List[str]], max_results: int = 5, include_raw_content: bool = True):
-    """
-    Performs concurrent web searches using Google.
+    """Performs concurrent web searches using Google.
     Uses Google Custom Search API if environment variables are set, otherwise falls back to web scraping.
 
     Args:
@@ -938,8 +926,6 @@ async def google_search_async(search_queries: Union[str, List[str]], max_results
     Returns:
         List[dict]: List of search responses from Google, one per query
     """
-
-
     # Check for API credentials from environment variables
     api_key = os.environ.get("GOOGLE_API_KEY")
     cx = os.environ.get("GOOGLE_CX")
@@ -1186,8 +1172,7 @@ async def google_search_async(search_queries: Union[str, List[str]], max_results
             executor.shutdown(wait=False)
 
 async def scrape_pages(titles: List[str], urls: List[str]) -> str:
-    """
-    Scrapes content from a list of URLs and formats it into a readable markdown document.
+    """Scrapes content from a list of URLs and formats it into a readable markdown document.
     
     This function:
     1. Takes a list of page titles and URLs
@@ -1203,7 +1188,6 @@ async def scrape_pages(titles: List[str], urls: List[str]) -> str:
         str: A formatted string containing the full content of each page in markdown format,
              with clear section dividers and source attribution
     """
-    
     # Create an async HTTP client
     async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
         pages = []
@@ -1234,7 +1218,7 @@ async def scrape_pages(titles: List[str], urls: List[str]) -> str:
                 pages.append(f"Error fetching URL: {str(e)}")
         
         # Create formatted output
-        formatted_output = f"Search results: \n\n"
+        formatted_output = "Search results: \n\n"
         
         for i, (title, url, page) in enumerate(zip(titles, urls, pages)):
             formatted_output += f"\n\n--- SOURCE {i+1}: {title} ---\n"
@@ -1367,8 +1351,7 @@ async def tavily_search(
     topic: Annotated[Literal["general", "news", "finance"], InjectedToolArg] = "general",
     config: RunnableConfig = None
 ) -> str:
-    """
-    Fetches results from Tavily search API.
+    """Fetches results from Tavily search API.
 
     Args:
         queries (List[str]): List of search queries
@@ -1387,7 +1370,7 @@ async def tavily_search(
     )
 
     # Format the search results directly using the raw_content already provided
-    formatted_output = f"Search results: \n\n"
+    formatted_output = "Search results: \n\n"
     
     # Deduplicate results by URL
     unique_results = {}
@@ -1404,16 +1387,10 @@ async def tavily_search(
     max_char_to_include = 30_000
     # TODO: share this behavior across all search implementations / tools
     if configurable.process_search_results == "summarize":
-        if configurable.summarization_model_provider == "anthropic":
-            extra_kwargs = {"betas": ["extended-cache-ttl-2025-04-11"]}
-        else:
-            extra_kwargs = {}
-
         summarization_model = init_chat_model(
             model=configurable.summarization_model,
             model_provider=configurable.summarization_model_provider,
             max_retries=configurable.max_structured_output_retries,
-            **extra_kwargs
         )
         summarization_tasks = [
             noop() if not result.get("raw_content") else summarize_webpage(summarization_model, result['raw_content'][:max_char_to_include])
@@ -1455,8 +1432,7 @@ async def tavily_search(
 
 @tool
 async def azureaisearch_search(queries: List[str], max_results: int = 5, topic: str = "general") -> str:
-    """
-    Fetches results from Azure AI Search API.
+    """Fetches results from Azure AI Search API.
     
     Args:
         queries (List[str]): List of search queries
@@ -1473,7 +1449,7 @@ async def azureaisearch_search(queries: List[str], max_results: int = 5, topic: 
     )
 
     # Format the search results directly using the raw_content already provided
-    formatted_output = f"Search results: \n\n"
+    formatted_output = "Search results: \n\n"
     
     # Deduplicate results by URL
     unique_results = {}
@@ -1548,12 +1524,6 @@ async def summarize_webpage(model: BaseChatModel, webpage_content: str) -> str:
     """Summarize webpage content."""
     try:
         user_input_content = "Please summarize the article"
-        if isinstance(model, ChatAnthropic):
-            user_input_content = [{
-                "type": "text",
-                "text": user_input_content,
-                "cache_control": {"type": "ephemeral", "ttl": "1h"}
-            }]
 
         summary = await model.with_structured_output(Summary).with_retry(stop_after_attempt=2).ainvoke([
             {"role": "system", "content": SUMMARIZATION_PROMPT.format(webpage_content=webpage_content)},
@@ -1627,7 +1597,7 @@ async def load_mcp_server_config(path: str) -> dict:
     """Load MCP server configuration from a file."""
 
     def _load():
-        with open(path, "r") as f:
+        with open(path) as f:
             config = json.load(f)
         return config
 

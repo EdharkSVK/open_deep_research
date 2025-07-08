@@ -133,11 +133,11 @@ You can customize the research assistant workflow through several parameters:
 - `report_structure`: Define a custom structure for your report (defaults to a standard research report format)
 - `number_of_queries`: Number of search queries to generate per section (default: 2)
 - `max_search_depth`: Maximum number of reflection and search iterations (default: 2)
-- `planner_provider`: Model provider for planning phase (default: "anthropic", but can be any provider from supported integrations with `init_chat_model` as listed [here](https://python.langchain.com/api_reference/langchain/chat_models/langchain.chat_models.base.init_chat_model.html))
-- `planner_model`: Specific model for planning (default: "claude-3-7-sonnet-latest")
+- `planner_provider`: Model provider for planning phase (default: "groq", but can be any provider from supported integrations with `init_chat_model` as listed [here](https://python.langchain.com/api_reference/langchain/chat_models/langchain.chat_models.base.init_chat_model.html))
+- `planner_model`: Specific model for planning (default: "llama-3.3-70b-versatile")
 - `planner_model_kwargs`: Additional parameter for planner_model
-- `writer_provider`: Model provider for writing phase (default: "anthropic", but can be any provider from supported integrations with `init_chat_model` as listed [here](https://python.langchain.com/api_reference/langchain/chat_models/langchain.chat_models.base.init_chat_model.html))
-- `writer_model`: Model for writing the report (default: "claude-3-5-sonnet-latest")
+- `writer_provider`: Model provider for writing phase (default: "groq", but can be any provider from supported integrations with `init_chat_model` as listed [here](https://python.langchain.com/api_reference/langchain/chat_models/langchain.chat_models.base.init_chat_model.html))
+- `writer_model`: Model for writing the report (default: "llama-3.3-70b-versatile")
 - `writer_model_kwargs`: Additional parameter for writer_model
 - `search_api`: API to use for web searches (default: "tavily", options include "perplexity", "exa", "arxiv", "pubmed", "linkup")
 
@@ -155,8 +155,8 @@ This implementation focuses on efficiency and parallelization, making it ideal f
 
 You can customize the multi-agent implementation through several parameters:
 
-- `supervisor_model`: Model for the supervisor agent (default: "anthropic:claude-3-5-sonnet-latest")
-- `researcher_model`: Model for researcher agents (default: "anthropic:claude-3-5-sonnet-latest") 
+- `supervisor_model`: Model for the supervisor agent (default: "groq:llama-3.3-70b-versatile")
+- `researcher_model`: Model for researcher agents (default: "groq:deepseek-r1-distill-llama-70b")
 - `number_of_queries`: Number of search queries to generate per section (default: 2)
 - `search_api`: API to use for web searches (default: "tavily", options include "duckduckgo", "none")
 - `ask_for_clarification`: Whether the supervisor should ask clarifying questions before research (default: false) - **Important**: Set to `true` to enable the Question tool for the supervisor agent
@@ -350,7 +350,7 @@ python tests/run_test.py --all
 
 # Test specific agent with custom models
 python tests/run_test.py --agent multi_agent \
-  --supervisor-model "anthropic:claude-3-7-sonnet-latest" \
+  --supervisor-model "groq:llama-3.3-70b-versatile" \
   --search-api tavily
 
 # Test with OpenAI o3 models

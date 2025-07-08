@@ -1,12 +1,14 @@
+import asyncio
+import os
+from typing import Literal
+
+from dotenv import load_dotenv
+from langchain_core.messages import MessageLikeRepresentation
 from langsmith import Client
+
+from open_deep_research.multi_agent import supervisor_builder
 from tests.evals.evaluators import eval_overall_quality, eval_relevance, eval_structure
 from tests.evals.target import generate_report_multi_agent
-from dotenv import load_dotenv
-import os
-import asyncio
-from typing import Literal
-from langchain_core.messages import MessageLikeRepresentation
-from open_deep_research.multi_agent import supervisor_builder
 
 load_dotenv("../.env")
 
@@ -19,10 +21,10 @@ evaluators = [eval_overall_quality, eval_relevance, eval_structure]
 # TODO: Configure these variables
 process_search_results = "summarize"
 include_source = False
-summarization_model = "claude-3-5-haiku-latest"
-summarization_model_provider = "anthropic"
-supervisor_model = "claude-3-5-sonnet-latest"
-researcher_model = "claude-3-5-sonnet-latest"
+summarization_model = "llama3-8b-8192"
+summarization_model_provider = "groq"
+supervisor_model = "llama-3.3-70b-versatile"
+researcher_model = "deepseek-r1-distill-llama-70b"
 
 
 async def generate_report_multi_agent(
