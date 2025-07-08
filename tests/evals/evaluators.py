@@ -1,16 +1,17 @@
 from typing import cast
 
+from langchain_groq import ChatGroq
 from pydantic import BaseModel, Field
-from langchain_anthropic import ChatAnthropic
 
 from open_deep_research.utils import get_today_str
-from tests.evals.prompts import RELEVANCE_PROMPT, STRUCTURE_PROMPT, GROUNDEDNESS_PROMPT, OVERALL_QUALITY_PROMPT
-
-eval_model = ChatAnthropic(
-    model="claude-sonnet-4-0",
-    # cache the evaluator input prompts on repeated runs
-    betas=["extended-cache-ttl-2025-04-11"],
+from tests.evals.prompts import (
+    GROUNDEDNESS_PROMPT,
+    OVERALL_QUALITY_PROMPT,
+    RELEVANCE_PROMPT,
+    STRUCTURE_PROMPT,
 )
+
+eval_model = ChatGroq(model="llama3-8b-8192")
 
 class OverallQualityScore(BaseModel):
     """Score the overall quality of the report against specific criteria."""
@@ -54,7 +55,7 @@ def eval_overall_quality(inputs: dict, outputs: dict):
     final_report = outputs["messages"][0]["content"]
 
     user_input_content = f"""User input: {query}\n\nReport: \n\n{final_report}\n\nEvaluate whether the report meets the criteria and provide detailed justification for your evaluation."""
-    if isinstance(eval_model, ChatAnthropic):
+    if isinstance(eval_model, ChatGroq):
         user_input_content = [{
             "type": "text",
             "text": user_input_content,
@@ -74,7 +75,7 @@ def eval_relevance(inputs: dict, outputs: dict):
     final_report = outputs["messages"][0]["content"]
 
     user_input_content = f"""User input: {query}\n\nReport: \n\n{final_report}\n\nEvaluate whether the report meets the criteria and provide detailed justification for your evaluation."""
-    if isinstance(eval_model, ChatAnthropic):
+    if isinstance(eval_model, ChatGroq):
         user_input_content = [{
             "type": "text",
             "text": user_input_content,
@@ -94,7 +95,7 @@ def eval_structure(inputs: dict, outputs: dict):
     final_report = outputs["messages"][0]["content"]
 
     user_input_content = f"""User input: {query}\n\nReport: \n\n{final_report}\n\nEvaluate whether the report meets the criteria and provide detailed justification for your evaluation."""
-    if isinstance(eval_model, ChatAnthropic):
+    if isinstance(eval_model, ChatGroq):
         user_input_content = [{
             "type": "text",
             "text": user_input_content,
@@ -114,7 +115,7 @@ def eval_groundedness(inputs: dict, outputs: dict):
     context = outputs["context"]
 
     user_input_content = GROUNDEDNESS_PROMPT.format(context=context, report=report, today=get_today_str())
-    if isinstance(eval_model, ChatAnthropic):
+    if isinstance(eval_model, ChatGroq):
         user_input_content = [{
             "type": "text",
             "text": user_input_content,
