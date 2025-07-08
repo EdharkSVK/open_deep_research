@@ -174,22 +174,23 @@ def human_feedback(state: ReportState, config: RunnableConfig) -> Command[Litera
     
     feedback = interrupt(interrupt_message)
 
-    # If the user approves the report plan, kick off section writing
-    if isinstance(feedback, bool) and feedback is True:
-        # Treat this as approve and kick off section writing
+    if isinstance(feedback, dict):
+        feedback_val = feedback.get("feedback", feedback.get("value"))
+    else:
+        feedback_val = feedback
+
+    if isinstance(feedback_val, bool) and feedback_val is True:
         return Command(goto=[
-            Send("build_section_with_web_research", {"topic": topic, "section": s, "search_iterations": 0}) 
-            for s in sections 
+            Send("build_section_with_web_research", {"topic": topic, "section": s, "search_iterations": 0})
+            for s in sections
             if s.research
         ])
-    
-    # If the user provides feedback, regenerate the report plan 
-    elif isinstance(feedback, str):
-        # Treat this as feedback and append it to the existing list
-        return Command(goto="generate_report_plan", 
-                       update={"feedback_on_report_plan": [feedback]})
+
+    elif isinstance(feedback_val, str):
+        return Command(goto="generate_report_plan",
+                       update={"feedback_on_report_plan": [feedback_val]})
     else:
-        raise TypeError(f"Interrupt value of type {type(feedback)} is not supported.")
+        raise TypeError(f"Interrupt value of type {type(feedback_val)} is not supported.")
     
 async def generate_queries(state: SectionState, config: RunnableConfig):
     """Generate search queries for researching a specific section.
