@@ -1,6 +1,7 @@
 """Pytest configuration for open_deep_research tests."""
 
 import os
+import pytest
 
 
 def pytest_addoption(parser):
@@ -16,8 +17,7 @@ def pytest_addoption(parser):
     parser.addoption("--writer-model", action="store", help="Model for writing")
     parser.addoption("--max-search-depth", action="store", help="Maximum search depth")
 
-# Provide fallback API key so tests don't fail during import
-os.environ.setdefault("TAVILY_API_KEY", "dummy-key")
-os.environ.setdefault("LANGSMITH_TEST_TRACKING", "false")
-os.environ.setdefault("GROQ_API_KEY", "dummy-key")
-
+    # Provide fallback API key so tests don't fail during import
+    os.environ.setdefault("TAVILY_API_KEY", "dummy-key")
+    os.environ.setdefault("LANGSMITH_TEST_TRACKING", "false")
+    os.environ.setdefault("GROQ_API_KEY", "dummy-key")
