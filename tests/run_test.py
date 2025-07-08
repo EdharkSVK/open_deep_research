@@ -1,8 +1,9 @@
 #!/usr/bin/env python
+import argparse
 import os
 import subprocess
 import sys
-import argparse
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.rule import Rule
@@ -14,7 +15,7 @@ Simplified test runner for Open Deep Research with rich console output.
 
 Example usage:
 python tests/run_test.py --all  # Run all agents with rich output
-python tests/run_test.py --agent multi_agent --supervisor-model "anthropic:claude-3-7-sonnet-latest"
+python tests/run_test.py --agent multi_agent --supervisor-model "groq:llama-3.3-70b-versatile"
 python tests/run_test.py --agent graph --search-api tavily
 """
 
@@ -27,12 +28,12 @@ def main():
     parser.add_argument("--all", action="store_true", help="Run tests for all agents")
     
     # Model configuration options
-    parser.add_argument("--supervisor-model", help="Model for supervisor agent (e.g., 'anthropic:claude-3-7-sonnet-latest')")
-    parser.add_argument("--researcher-model", help="Model for researcher agent (e.g., 'anthropic:claude-3-5-sonnet-latest')")
-    parser.add_argument("--planner-provider", help="Provider for planner model (e.g., 'anthropic')")
+    parser.add_argument("--supervisor-model", help="Model for supervisor agent (e.g., 'groq:llama-3.3-70b-versatile')")
+    parser.add_argument("--researcher-model", help="Model for researcher agent (e.g., 'groq:deepseek-r1-distill-llama-70b')")
+    parser.add_argument("--planner-provider", help="Provider for planner model (e.g., 'groq')")
     parser.add_argument("--planner-model", help="Model for planner in graph-based agent (e.g., 'claude-3-7-sonnet-latest')")
-    parser.add_argument("--writer-provider", help="Provider for writer model (e.g., 'anthropic')")
-    parser.add_argument("--writer-model", help="Model for writer in graph-based agent (e.g., 'claude-3-5-sonnet-latest')")
+    parser.add_argument("--writer-provider", help="Provider for writer model (e.g., 'groq')")
+    parser.add_argument("--writer-model", help="Model for writer in graph-based agent (e.g., 'llama-3.3-70b-versatile')")
     parser.add_argument("--eval-model", help="Model for evaluating report quality (default: openai:claude-3-7-sonnet-latest)")
     parser.add_argument("--max-search-depth", help="Maximum search depth for graph agent")
     
@@ -79,7 +80,7 @@ def main():
         agent_config = agents[agent]
         
         # Set up LangSmith environment for this agent
-        project_name = f"ODR: Pytest"
+        project_name = "ODR: Pytest"
         os.environ["LANGSMITH_PROJECT"] = project_name
         os.environ["LANGSMITH_TEST_SUITE"] = project_name
         
@@ -123,11 +124,11 @@ def run_test(agent, agent_config, args):
     ))
     
     # Run the command with real-time output (no capture)
-    console.print(f"\n[yellow]Starting test execution...[/yellow]\n")
+    console.print("\n[yellow]Starting test execution...[/yellow]\n")
     result = subprocess.run(cmd)
     
     # Display results with rich formatting
-    console.print(f"\n[yellow]Test execution completed.[/yellow]")
+    console.print("\n[yellow]Test execution completed.[/yellow]")
     if result.returncode == 0:
         console.print(Panel(
             f"[bold green]✅ Test for {agent} PASSED[/bold green]",
