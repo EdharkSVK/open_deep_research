@@ -7,6 +7,9 @@ import asyncio
 from pydantic import BaseModel, Field
 from langchain.chat_models import init_chat_model
 from langsmith import testing as t
+
+LANGSMITH_ENABLED = bool(os.environ.get("LANGSMITH_API_KEY"))
+GROQ_ENABLED = bool(os.environ.get("GROQ_API_KEY"))
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -34,14 +37,14 @@ def get_evaluation_llm(eval_model=None):
     
     Args:
         eval_model: Model identifier to use for evaluation
-                    Format: "provider:model_name" (e.g., "anthropic:claude-3-7-sonnet-latest")
+                    Format: "provider:model_name" (e.g., "groq:llama-3.3-70b-versatile")
                     If None, it will use environment variable or default
     
     Returns:
         Structured LLM for generating evaluation grades
     """
     # Use provided model, then environment variable, then default
-    model_to_use = eval_model or os.environ.get("EVAL_MODEL", "anthropic:claude-3-7-sonnet-latest")
+    model_to_use = eval_model or os.environ.get("EVAL_MODEL", "groq:llama-3.3-70b-versatile")
     
     criteria_eval_llm = init_chat_model(model_to_use)
     return criteria_eval_llm.with_structured_output(CriteriaGrade)
@@ -93,7 +96,7 @@ def search_api(request):
 @pytest.fixture
 def eval_model(request):
     """Get the evaluation model from command line or environment variable."""
-    return request.config.getoption("--eval-model") or os.environ.get("EVAL_MODEL", "anthropic:claude-3-7-sonnet-latest")
+    return request.config.getoption("--eval-model") or os.environ.get("EVAL_MODEL", "groq:llama-3.3-70b-versatile")
 
 @pytest.fixture
 def models(request, research_agent):
@@ -102,30 +105,30 @@ def models(request, research_agent):
         return {
             "supervisor_model": (
                 request.config.getoption("--supervisor-model") or 
-                os.environ.get("SUPERVISOR_MODEL", "anthropic:claude-3-7-sonnet-latest")
+                os.environ.get("SUPERVISOR_MODEL", "groq:llama-3.3-70b-versatile")
             ),
             "researcher_model": (
                 request.config.getoption("--researcher-model") or 
-                os.environ.get("RESEARCHER_MODEL", "anthropic:claude-3-5-sonnet-latest")
+                os.environ.get("RESEARCHER_MODEL", "groq:llama-3.3-70b-versatile")
             ),
         }
     else:  # graph agent
         return {
             "planner_provider": (
                 request.config.getoption("--planner-provider") or 
-                os.environ.get("PLANNER_PROVIDER", "anthropic")
+                os.environ.get("PLANNER_PROVIDER", "groq")
             ),
             "planner_model": (
                 request.config.getoption("--planner-model") or 
-                os.environ.get("PLANNER_MODEL", "claude-3-7-sonnet-latest")
+                os.environ.get("PLANNER_MODEL", "llama-3.3-70b-versatile")
             ),
             "writer_provider": (
                 request.config.getoption("--writer-provider") or 
-                os.environ.get("WRITER_PROVIDER", "anthropic")
+                os.environ.get("WRITER_PROVIDER", "groq")
             ),
             "writer_model": (
                 request.config.getoption("--writer-model") or 
-                os.environ.get("WRITER_MODEL", "claude-3-5-sonnet-latest")
+                os.environ.get("WRITER_MODEL", "llama-3.3-70b-versatile")
             ),
             "max_search_depth": int(
                 request.config.getoption("--max-search-depth") or 
@@ -136,9 +139,16 @@ def models(request, research_agent):
 # Note: Command line options are defined in conftest.py
 # These fixtures still work with options defined there
 
-@pytest.mark.langsmith
+if LANGSMITH_ENABLED:
+    langsmith_mark = pytest.mark.langsmith
+else:
+    langsmith_mark = lambda func: func
+
+@langsmith_mark
 def test_response_criteria_evaluation(research_agent, search_api, models, eval_model):
     """Test if a report meets the specified quality criteria."""
+    if not GROQ_ENABLED:
+        pytest.skip("Groq API key not provided")
     console.print(Panel.fit(
         f"[bold blue]Testing {research_agent} report generation with {search_api} search[/bold blue]",
         title="Test Configuration"
@@ -155,15 +165,16 @@ def test_response_criteria_evaluation(research_agent, search_api, models, eval_m
     
     console.print(models_table)
     
-    # Log inputs to LangSmith
-    t.log_inputs({
-        "agent_type": research_agent, 
-        "search_api": search_api,
-        "models": models,
-        "eval_model": eval_model,
-        "test": "report_quality_evaluation",
-        "description": f"Testing report quality for {research_agent} with {search_api}"
-    })
+    # Log inputs to LangSmith if configured
+    if LANGSMITH_ENABLED:
+        t.log_inputs({
+            "agent_type": research_agent,
+            "search_api": search_api,
+            "models": models,
+            "eval_model": eval_model,
+            "test": "report_quality_evaluation",
+            "description": f"Testing report quality for {research_agent} with {search_api}"
+        })
  
     # Run the appropriate agent based on the parameter
     if research_agent == "multi_agent":
@@ -208,10 +219,10 @@ def test_response_criteria_evaluation(research_agent, search_api, models, eval_m
         thread = {"configurable": {
             "thread_id": str(uuid.uuid4()),
             "search_api": search_api,
-            "planner_provider": models.get("planner_provider", "anthropic"),
-            "planner_model": models.get("planner_model", "claude-3-7-sonnet-latest"),
-            "writer_provider": models.get("writer_provider", "anthropic"),
-            "writer_model": models.get("writer_model", "claude-3-5-sonnet-latest"),
+            "planner_provider": models.get("planner_provider", "groq"),
+            "planner_model": models.get("planner_model", "llama-3.3-70b-versatile"),
+            "writer_provider": models.get("writer_provider", "groq"),
+            "writer_model": models.get("writer_model", "llama-3.3-70b-versatile"),
             "max_search_depth": models.get("max_search_depth", 2),
         }}
         
@@ -281,14 +292,14 @@ def test_response_criteria_evaluation(research_agent, search_api, models, eval_m
     ))
     
     # Log outputs to LangSmith
-    t.log_outputs({
-        "report": report,
-        "evaluation_result": eval_result.grade,
-        "justification": eval_result.justification,
-        "report_length": len(report),
-        "section_count": len(section_headers),
-        "section_headers": section_headers,
-    })
+    if LANGSMITH_ENABLED:
+        t.log_outputs({
+            "report": report,
+            "evaluation_result": eval_result.grade,
+            "justification": eval_result.justification,
+            "report_length": len(report),
+            "section_count": len(section_headers),
+            "section_headers": section_headers,
+        })
     
-    # Test passes if the evaluation criteria are met
-    assert eval_result.grade
+    # Test passes if the evaluation criteria are met    assert eval_result.grade
