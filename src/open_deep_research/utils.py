@@ -87,8 +87,13 @@ def get_search_params(
     if not search_api_config:
         return {}
 
-    # Filter the config to only include accepted parameters
-    return {k: v for k, v in search_api_config.items() if k in accepted_params}
+    # Filter the config to only include accepted parameters and drop None values
+    return {
+        k: v
+        for k, v in search_api_config.items()
+        if v is not None and k in accepted_params
+    }
+
 
 
 def deduplicate_and_format_sources(
@@ -1786,6 +1791,7 @@ async def load_mcp_server_config(path: str) -> dict:
             config = json.load(f)
         return config
 
-    config = await asyncio.to_thread(_load)
+
+    config = await asyncio.to_thread(_load)    
     return config
 

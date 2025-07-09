@@ -1,4 +1,4 @@
-clarify_with_user_instructions="""
+clarify_with_user_instructions = """
 These are the messages that have been exchanged so far from the user asking for the report:
 <Messages>
 {messages}
@@ -9,7 +9,7 @@ Focus on: technical depth, target audience, specific aspects to emphasize
 Examples: "Should I focus on technical implementation details or high-level business benefits?" 
 """
 
-report_planner_query_writer_instructions="""You are performing research for a report. 
+report_planner_query_writer_instructions = """You are performing research for a report. 
 
 These are the messages that have been exchanged so far from the user asking for the report:
 <Messages>
@@ -39,7 +39,7 @@ Call the Queries tool
 Today is {today}
 """
 
-report_planner_instructions="""I want a plan for a report that is concise and focused.
+report_planner_instructions = """I want a plan for a report that is concise and focused.
 
 These are the messages that have been exchanged so far from the user asking for the report:
 <Messages>
@@ -93,7 +93,7 @@ Call the Sections tool
 </Format>
 """
 
-query_writer_instructions="""You are an expert technical writer crafting targeted web search queries that will gather comprehensive information for writing a technical report section.
+query_writer_instructions = """You are an expert technical writer crafting targeted web search queries that will gather comprehensive information for writing a technical report section.
 
 These are the messages that have been exchanged so far from the user asking for the report:
 <Messages>
@@ -160,7 +160,7 @@ section_writer_instructions = """Write one section of a research report.
 </Final Check>
 """
 
-section_writer_inputs=""" 
+section_writer_inputs = """ 
 These are the messages that have been exchanged so far from the user asking for the report:
 <Messages>
 {messages}
@@ -216,7 +216,7 @@ follow_up_queries: List[SearchQuery] = Field(
 </format>
 """
 
-final_section_writer_instructions="""You are an expert technical writer crafting a section that synthesizes information from the rest of the report.
+final_section_writer_instructions = """You are an expert technical writer crafting a section that synthesizes information from the rest of the report.
 
 These are the messages that have been exchanged so far from the user asking for the report:
 <Messages>
@@ -347,5 +347,4 @@ Example 2 (for a scientific article):
    ]
 }}
 ```
-
 Remember, your goal is to create a summary that can be easily understood and utilized by a downstream research agent while preserving the most critical information from the original webpage."""

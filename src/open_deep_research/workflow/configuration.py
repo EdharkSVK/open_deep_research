@@ -10,26 +10,29 @@ from open_deep_research.configuration import DEFAULT_REPORT_STRUCTURE, SearchAPI
 @dataclass(kw_only=True)
 class WorkflowConfiguration:
     """Configuration for the workflow/graph-based implementation (graph.py)."""
+
     # Common configuration
     report_structure: str = DEFAULT_REPORT_STRUCTURE
     search_api: SearchAPI = SearchAPI.TAVILY
     search_api_config: Optional[Dict[str, Any]] = None
     clarify_with_user: bool = False
     sections_user_approval: bool = False
-    process_search_results: Literal["summarize", "split_and_rerank"] | None = "summarize"
+    process_search_results: Literal["summarize", "split_and_rerank"] | None = (
+        "summarize"
+    )
     summarization_model_provider: str = "groq"
     summarization_model: str = "llama3-8b-8192"
     max_structured_output_retries: int = 3
     include_source_str: bool = False
-    
+
     # Workflow-specific configuration
-    number_of_queries: int = 2 # Number of search queries to generate per iteration
-    max_search_depth: int = 2 # Maximum number of reflection + search iterations
+    number_of_queries: int = 2  # Number of search queries to generate per iteration
+    max_search_depth: int = 2  # Maximum number of reflection + search iterations
     planner_provider: str = "groq"
-    planner_model: str = "llama-3.3-70b-versatile"
+    planner_model: str = "llama3-70b-8192"
     planner_model_kwargs: Optional[Dict[str, Any]] = None
     writer_provider: str = "groq"
-    writer_model: str = "llama-3.3-70b-versatile"
+    writer_model: str = "llama3-70b-8192"
     writer_model_kwargs: Optional[Dict[str, Any]] = None
 
     @classmethod
@@ -44,5 +47,4 @@ class WorkflowConfiguration:
             f.name: os.environ.get(f.name.upper(), configurable.get(f.name))
             for f in fields(cls)
             if f.init
-        }
-        return cls(**{k: v for k, v in values.items() if v})
+        }        return cls(**{k: v for k, v in values.items() if v})
