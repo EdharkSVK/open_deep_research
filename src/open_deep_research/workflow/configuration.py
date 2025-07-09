@@ -35,11 +35,12 @@ class WorkflowConfiguration:
         cls, config: Optional[RunnableConfig] = None
     ) -> "WorkflowConfiguration":
         """Create a WorkflowConfiguration instance from a RunnableConfig."""
-        configurable = (
-            config["configurable"] if config and "configurable" in config else {}
-        )
+        cfg = config["configurable"] if config and "configurable" in config else {}
         values: dict[str, Any] = {
-            f.name: os.environ.get(f.name.upper(), configurable.get(f.name))
+            f.name: os.environ.get(f.name.upper(), cfg.get(f.name))
             for f in fields(cls)
             if f.init
-        }        return cls(**{k: v for k, v in values.items() if v})
+
+        }        clean_values = {k: v for k, v in values.items() if v}
+        return cls(**clean_values)
+
