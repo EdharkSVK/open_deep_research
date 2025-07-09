@@ -1786,4 +1786,5 @@ async def load_mcp_server_config(path: str) -> dict:
             config = json.load(f)
         return config
 
-    config = await asyncio.to_thread(_load)    return config
+    config = await asyncio.to_thread(_load)
+    return config
