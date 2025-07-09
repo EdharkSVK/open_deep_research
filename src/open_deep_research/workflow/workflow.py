@@ -131,30 +131,56 @@ async def generate_report_plan(state: ReportState, config: RunnableConfig) -> Co
         ], update={"sections": sections})
 
 
-async def human_feedback(state: ReportState, config: RunnableConfig) -> Command[Literal["generate_report_plan","build_section_with_web_research"]]:
+async def human_feedback(
+    state: ReportState, config: RunnableConfig
+) -> Command[Literal["generate_report_plan", "build_section_with_web_research"]]:
+    """Get human feedback on the report plan and route accordingly."""
+
     messages = state["messages"]
-    sections = state['sections']
+    sections = state["sections"]
     sections_str = "\n\n".join(
         f"Section: {section.name}\n"
         f"Description: {section.description}\n"
         f"Research needed: {'Yes' if section.research else 'No'}\n"
         for section in sections
     )
-    interrupt_message = f"""Please provide feedback on the following report plan. 
-                        \n\n{sections_str}\n
-                        \nDoes the report plan meet your needs?\nPass 'true' to approve the report plan.\nOr, provide feedback to regenerate the report plan:"""
+
+    interrupt_message = (
+        "Please provide feedback on the following report plan."
+        f"\n\n{sections_str}\n"
+        "\nDoes the report plan meet your needs?\nPass 'true' to approve the report plan."
+        "\nOr, provide feedback to regenerate the report plan:"
+    )
+
     feedback = interrupt(interrupt_message)
-    if (isinstance(feedback, bool) and feedback is True) or (isinstance(feedback, str) and feedback.lower() == "true"):
-        return Command(goto=[
-            Send("build_section_with_web_research", {"messages": messages, "section": s, "search_iterations": 0}) 
-            for s in sections 
-            if s.research
-        ])
-    elif isinstance(feedback, str):
-        return Command(goto="generate_report_plan", 
-                       update={"feedback_on_report_plan": [feedback]})
+
+    if isinstance(feedback, dict):
+        feedback_val = feedback.get("feedback", feedback.get("value"))
     else:
-        raise TypeError(f"Interrupt value of type {type(feedback)} is not supported.")
+        feedback_val = feedback
+
+    if feedback_val is True:
+        return Command(
+            goto=[
+                Send(
+                    "build_section_with_web_research",
+                    {"messages": messages, "section": s, "search_iterations": 0},
+                )
+                for s in sections
+                if s.research
+            ]
+        )
+
+    if isinstance(feedback_val, str) and feedback_val.strip():
+        return Command(
+            goto="generate_report_plan",
+            update={"feedback_on_report_plan": [feedback_val]},
+        )
+
+    return Command(
+        goto="generate_report_plan",
+        update={"feedback_on_report_plan": ["(no feedback)"]},
+    )
 
 
 async def generate_queries(state: SectionState, config: RunnableConfig):
