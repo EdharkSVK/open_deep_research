@@ -15,19 +15,19 @@ class WorkflowConfiguration:
     clarify_with_user: bool = False
     sections_user_approval: bool = False
     process_search_results: Literal["summarize", "split_and_rerank"] | None = "summarize"
-    summarization_model_provider: str = "anthropic"
-    summarization_model: str = "claude-3-5-haiku-latest"
+    summarization_model_provider: str = "groq"
+    summarization_model: str = "llama-3.3-70b-versatile"
     max_structured_output_retries: int = 3
     include_source_str: bool = False
     
     # Workflow-specific configuration
     number_of_queries: int = 2 # Number of search queries to generate per iteration
     max_search_depth: int = 2 # Maximum number of reflection + search iterations
-    planner_provider: str = "anthropic"
-    planner_model: str = "claude-3-7-sonnet-latest"
+    planner_provider: str = "groq"
+    planner_model: str = "llama-3.3-70b-versatile"
     planner_model_kwargs: Optional[Dict[str, Any]] = None
-    writer_provider: str = "anthropic"
-    writer_model: str = "claude-3-7-sonnet-latest"
+    writer_provider: str = "groq"
+    writer_model: str = "llama-3.3-70b-versatile"
     writer_model_kwargs: Optional[Dict[str, Any]] = None
 
     @classmethod
@@ -35,12 +35,11 @@ class WorkflowConfiguration:
         cls, config: Optional[RunnableConfig] = None
     ) -> "WorkflowConfiguration":
         """Create a WorkflowConfiguration instance from a RunnableConfig."""
-        configurable = (
-            config["configurable"] if config and "configurable" in config else {}
-        )
+        cfg = config["configurable"] if config and "configurable" in config else {}
         values: dict[str, Any] = {
-            f.name: os.environ.get(f.name.upper(), configurable.get(f.name))
+            f.name: os.environ.get(f.name.upper(), cfg.get(f.name))
             for f in fields(cls)
             if f.init
-        }
-        return cls(**{k: v for k, v in values.items() if v})
+        }        clean_values = {k: v for k, v in values.items() if v}
+        return cls(**clean_values)
+
