@@ -20,9 +20,10 @@ playwright install --with-deps
 
 # open ngrok tunnel in background
 if [ -f ./start-tunnel.sh ]; then
-  ./start-tunnel.sh &
+
+  nohup ./start-tunnel.sh >/dev/null 2>&1 &
+  echo "ngrok tunnel starting..."
 fi
 
 # start LangGraph server
 langgraph dev --host 0.0.0.0 --port 2024 --allow-blocking
-
