@@ -14,7 +14,7 @@ Simplified test runner for Open Deep Research with rich console output.
 
 Example usage:
 python tests/run_test.py --all  # Run all agents with rich output
-python tests/run_test.py --agent multi_agent --supervisor-model "anthropic:claude-3-7-sonnet-latest"
+python tests/run_test.py --agent multi_agent --supervisor-model "groq:llama-3.3-70b-versatile"
 python tests/run_test.py --agent graph --search-api tavily
 """
 
@@ -27,13 +27,13 @@ def main():
     parser.add_argument("--all", action="store_true", help="Run tests for all agents")
     
     # Model configuration options
-    parser.add_argument("--supervisor-model", help="Model for supervisor agent (e.g., 'anthropic:claude-3-7-sonnet-latest')")
-    parser.add_argument("--researcher-model", help="Model for researcher agent (e.g., 'anthropic:claude-3-5-sonnet-latest')")
-    parser.add_argument("--planner-provider", help="Provider for planner model (e.g., 'anthropic')")
-    parser.add_argument("--planner-model", help="Model for planner in graph-based agent (e.g., 'claude-3-7-sonnet-latest')")
-    parser.add_argument("--writer-provider", help="Provider for writer model (e.g., 'anthropic')")
-    parser.add_argument("--writer-model", help="Model for writer in graph-based agent (e.g., 'claude-3-5-sonnet-latest')")
-    parser.add_argument("--eval-model", help="Model for evaluating report quality (default: openai:claude-3-7-sonnet-latest)")
+    parser.add_argument("--supervisor-model", help="Model for supervisor agent (e.g., 'groq:llama-3.3-70b-versatile')")
+    parser.add_argument("--researcher-model", help="Model for researcher agent (e.g., 'groq:llama-3.3-70b-versatile')")
+    parser.add_argument("--planner-provider", help="Provider for planner model (e.g., 'groq')")
+    parser.add_argument("--planner-model", help="Model for planner in graph-based agent (e.g., 'llama-3.3-70b-versatile')")
+    parser.add_argument("--writer-provider", help="Provider for writer model (e.g., 'groq')")
+    parser.add_argument("--writer-model", help="Model for writer in graph-based agent (e.g., 'llama-3.3-70b-versatile')")
+    parser.add_argument("--eval-model", help="Model for evaluating report quality (default: groq:llama-3.3-70b-versatile)")
     parser.add_argument("--max-search-depth", help="Maximum search depth for graph agent")
     
     # Search API configuration

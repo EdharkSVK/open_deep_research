@@ -1,6 +1,6 @@
 # Open Deep Research
 
-Open Deep Research is an experimental, fully open-source research assistant that automates deep research and produces comprehensive reports on any topic. It features two implementations - a [workflow](https://langchain-ai.github.io/langgraph/tutorials/workflows/) and a multi-agent architecture - each with distinct advantages. You can customize the entire research and writing process with specific models, prompts, report structure, and search tools.
+Open Deep Research is an experimental, fully open-source research assistant that automates deep research and produces comprehensive reports on any topic. It features two implementations - a [workflow](https://langchain-ai.github.io/langgraph/tutorials/workflows/) and a multi-agent architecture - each with distinct advantages. This version defaults to **Groq** models and Tavily search, and you can customize every step with your own models, prompts, report structure, and search tools.
 
 #### Workflow
 
@@ -22,6 +22,13 @@ Then edit the `.env` file to customize the environment variables (for model sele
 ```bash
 cp .env.example .env
 ```
+
+Key variables include:
+- `GROQ_API_KEY`
+- `TAVILY_API_KEY`
+- `LANGSMITH_API_KEY`
+- `NGROK_AUTHTOKEN`
+- `PLAYWRIGHT_BROWSERS_PATH`
 
 Launch the assistant with the LangGraph server locally, which will open in your browser:
 
@@ -51,6 +58,10 @@ Use this to open the Studio UI:
 - 🚀 API: http://127.0.0.1:2024
 - 🎨 Studio UI: https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024
 - 📚 API Docs: http://127.0.0.1:2024/docs
+```
+If you need remote access, expose the server with ngrok:
+```bash
+ngrok http 2024
 ```
 
 #### Multi-agent
@@ -133,11 +144,11 @@ You can customize the research assistant workflow through several parameters:
 - `report_structure`: Define a custom structure for your report (defaults to a standard research report format)
 - `number_of_queries`: Number of search queries to generate per section (default: 2)
 - `max_search_depth`: Maximum number of reflection and search iterations (default: 2)
-- `planner_provider`: Model provider for planning phase (default: "anthropic", but can be any provider from supported integrations with `init_chat_model` as listed [here](https://python.langchain.com/api_reference/langchain/chat_models/langchain.chat_models.base.init_chat_model.html))
-- `planner_model`: Specific model for planning (default: "claude-3-7-sonnet-latest")
+  - `planner_provider`: Model provider for planning phase (default: "groq", but can be any provider from supported integrations with `init_chat_model` as listed [here](https://python.langchain.com/api_reference/langchain/chat_models/langchain.chat_models.base.init_chat_model.html))
+  - `planner_model`: Specific model for planning (default: "llama-3.3-70b-versatile")
 - `planner_model_kwargs`: Additional parameter for planner_model
-- `writer_provider`: Model provider for writing phase (default: "anthropic", but can be any provider from supported integrations with `init_chat_model` as listed [here](https://python.langchain.com/api_reference/langchain/chat_models/langchain.chat_models.base.init_chat_model.html))
-- `writer_model`: Model for writing the report (default: "claude-3-5-sonnet-latest")
+  - `writer_provider`: Model provider for writing phase (default: "groq", but can be any provider from supported integrations with `init_chat_model` as listed [here](https://python.langchain.com/api_reference/langchain/chat_models/langchain.chat_models.base.init_chat_model.html))
+  - `writer_model`: Model for writing the report (default: "llama-3.3-70b-versatile")
 - `writer_model_kwargs`: Additional parameter for writer_model
 - `search_api`: API to use for web searches (default: "tavily", options include "perplexity", "exa", "arxiv", "pubmed", "linkup")
 
@@ -155,8 +166,8 @@ This implementation focuses on efficiency and parallelization, making it ideal f
 
 You can customize the multi-agent implementation through several parameters:
 
-- `supervisor_model`: Model for the supervisor agent (default: "anthropic:claude-3-5-sonnet-latest")
-- `researcher_model`: Model for researcher agents (default: "anthropic:claude-3-5-sonnet-latest") 
+  - `supervisor_model`: Model for the supervisor agent (default: "groq:llama-3.3-70b-versatile")
+  - `researcher_model`: Model for researcher agents (default: "groq:llama-3.3-70b-versatile")
 - `number_of_queries`: Number of search queries to generate per section (default: 2)
 - `search_api`: API to use for web searches (default: "tavily", options include "duckduckgo", "none")
 - `ask_for_clarification`: Whether the supervisor should ask clarifying questions before research (default: false) - **Important**: Set to `true` to enable the Question tool for the supervisor agent
@@ -301,7 +312,7 @@ thread = {"configurable": {"thread_id": str(uuid.uuid4()),
 
 (2) ***The workflow planner and writer models need to support structured outputs***: Check whether structured outputs are supported by the model you are using [here](https://python.langchain.com/docs/integrations/chat/).
 
-(3) ***The agent models need to support tool calling:*** Ensure tool calling is well supoorted; tests have been done with Claude 3.7, o3, o3-mini, and gpt4.1. See [here](https://smith.langchain.com/public/adc5d60c-97ee-4aa0-8b2c-c776fb0d7bd6/d).
+(3) ***The agent models need to support tool calling:*** Ensure tool calling is well supported; tests have been done with Groq's `llama-3.3-70b-versatile` as well as Claude and GPT-4. See [here](https://smith.langchain.com/public/adc5d60c-97ee-4aa0-8b2c-c776fb0d7bd6/d).
 
 (4) With Groq, there are token per minute (TPM) limits if you are on the `on_demand` service tier:
 - The `on_demand` service tier has a limit of `6000 TPM`
@@ -350,18 +361,18 @@ python tests/run_test.py --all
 
 # Test specific agent with custom models
 python tests/run_test.py --agent multi_agent \
-  --supervisor-model "anthropic:claude-3-7-sonnet-latest" \
+  --supervisor-model "groq:llama-3.3-70b-versatile" \
   --search-api tavily
 
-# Test with OpenAI o3 models
+# Test with Groq models
 python tests/run_test.py --all \
-  --supervisor-model "openai:o3" \
-  --researcher-model "openai:o3" \
-  --planner-provider "openai" \
-  --planner-model "o3" \
-  --writer-provider "openai" \
-  --writer-model "o3" \
-  --eval-model "openai:o3" \
+  --supervisor-model "groq:llama-3.3-70b-versatile" \
+  --researcher-model "groq:llama-3.3-70b-versatile" \
+  --planner-provider "groq" \
+  --planner-model "llama-3.3-70b-versatile" \
+  --writer-provider "groq" \
+  --writer-model "llama-3.3-70b-versatile" \
+  --eval-model "groq:llama-3.3-70b-versatile" \
   --search-api "tavily"
 ```
 
