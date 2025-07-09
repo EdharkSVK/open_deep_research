@@ -53,6 +53,20 @@ Use this to open the Studio UI:
 - 📚 API Docs: http://127.0.0.1:2024/docs
 ```
 
+## Getting Started
+
+```bash
+cp .env.example .env
+# fill in your keys...
+./run.sh
+```
+
+Open the tunnel URL from ngrok output in your browser:
+
+```arduino
+https://smith.langchain.com/studio/?baseUrl=<your-ngrok-url>
+```
+
 #### Multi-agent
 
 (1) Chat with the agent about your topic of interest, and it will initiate report generation:
