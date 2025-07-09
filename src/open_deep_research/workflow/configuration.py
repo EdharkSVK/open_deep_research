@@ -40,6 +40,7 @@ class WorkflowConfiguration:
             f.name: os.environ.get(f.name.upper(), cfg.get(f.name))
             for f in fields(cls)
             if f.init
+
         }        clean_values = {k: v for k, v in values.items() if v}
         return cls(**clean_values)
 
