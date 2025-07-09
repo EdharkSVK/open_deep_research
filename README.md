@@ -30,6 +30,8 @@ Key variables include:
 - `NGROK_AUTHTOKEN`
 - `PLAYWRIGHT_BROWSERS_PATH`
 
+For a quick setup run `./dev_setup.sh` to create a venv, install dependencies, open an ngrok tunnel, and start the server.
+
 Launch the assistant with the LangGraph server locally, which will open in your browser:
 
 #### Mac
