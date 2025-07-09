@@ -175,7 +175,9 @@ def human_feedback(state: ReportState, config: RunnableConfig) -> Command[Litera
     feedback = interrupt(interrupt_message)
 
     if isinstance(feedback, dict):
-        feedback_val = feedback.get("feedback", feedback.get("value"))
+        feedback_val = feedback.get("feedback")
+        if not feedback_val:
+            feedback_val = feedback.get("value")
     else:
         feedback_val = feedback
 
