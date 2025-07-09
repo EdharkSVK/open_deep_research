@@ -95,6 +95,7 @@ def get_search_params(
     }
 
 
+
 def deduplicate_and_format_sources(
     search_response,
     max_tokens_per_source=5000,
@@ -1790,4 +1791,7 @@ async def load_mcp_server_config(path: str) -> dict:
             config = json.load(f)
         return config
 
-    config = await asyncio.to_thread(_load)    return config
+
+    config = await asyncio.to_thread(_load)    
+    return config
+

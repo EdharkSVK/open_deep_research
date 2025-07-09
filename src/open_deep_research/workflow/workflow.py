@@ -212,7 +212,9 @@ async def human_feedback(
     feedback = interrupt(interrupt_message)
 
     if isinstance(feedback, dict):
+
         feedback_val = feedback.get("feedback", feedback.get("value"))
+
     else:
         feedback_val = feedback
 
