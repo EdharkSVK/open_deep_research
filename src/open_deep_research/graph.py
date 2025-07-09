@@ -179,6 +179,15 @@ def human_feedback(state: ReportState, config: RunnableConfig) -> Command[Litera
     else:
         feedback_val = feedback
 
+
+    if isinstance(feedback_val, str):
+        raw_lower = feedback_val.strip().lower()
+        if raw_lower == "true":
+            feedback_val = True
+        elif raw_lower == "false":
+            feedback_val = False
+
+
     if feedback_val is True:
         return Command(
             goto=[
