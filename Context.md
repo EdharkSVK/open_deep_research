@@ -36,10 +36,11 @@ ddr/
 
 ````
 
-* **Hard 500-line cap** per source file – refactor if you get close.  
+* **A source file **should not exceed ≈ 700 LoC**; refactor when close.
 * Pydantic v2 for all request/response schemas.  
 * **LangGraph** orchestrates the DAG; each agent node may mount tools declared in `tools.py`.  
 * Secrets live in `.env` — never hard-code keys.
+*_Enable “thinking” mode on Qwen by passing `provider_kwargs={"enable_thinking": true}`._  
 
 ---
 
