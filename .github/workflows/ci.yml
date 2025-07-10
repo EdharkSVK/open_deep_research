@@ -19,6 +19,8 @@ jobs:
         run: |
           ruff check . --fix
           black .
+
+          ruff check . --fix
       - run: ruff check .
       - run: black --check .
       - run: pytest -q

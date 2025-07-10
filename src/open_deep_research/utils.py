@@ -1,5 +1,6 @@
 import asyncio
 import concurrent
+import concurrent.futures
 import datetime
 import hashlib
 import itertools
@@ -17,7 +18,11 @@ import requests
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.aio import SearchClient as AsyncAzureAISearchClient
 from bs4 import BeautifulSoup
-from duckduckgo_search import DDGS
+
+try:
+    from duckduckgo_search.ddgs import DDGS
+except ImportError:  # fallback for older versions
+    from duckduckgo_search import DDGS
 from exa_py import Exa
 from langchain.chat_models import init_chat_model
 from langchain.embeddings import init_embeddings
@@ -87,8 +92,13 @@ def get_search_params(
     if not search_api_config:
         return {}
 
-    # Filter the config to only include accepted parameters
-    return {k: v for k, v in search_api_config.items() if k in accepted_params}
+    # Filter the config to only include accepted parameters and drop None values
+    return {
+        k: v
+        for k, v in search_api_config.items()
+        if k in accepted_params and v is not None
+    }
+
 
 
 def deduplicate_and_format_sources(
@@ -134,9 +144,9 @@ def deduplicate_and_format_sources(
     # Format output
     formatted_text = "Content from sources:\n"
     for i, source in enumerate(unique_sources.values(), 1):
-        formatted_text += f"{'='*80}\n"  # Clear section separator
+        formatted_text += f"{'=' * 80}\n"  # Clear section separator
         formatted_text += f"Source: {source['title']}\n"
-        formatted_text += f"{'-'*80}\n"  # Subsection separator
+        formatted_text += f"{'-' * 80}\n"  # Subsection separator
         formatted_text += f"URL: {source['url']}\n===\n"
         formatted_text += (
             f"Most relevant content from source: {source['content']}\n===\n"
@@ -152,7 +162,8 @@ def deduplicate_and_format_sources(
             if len(raw_content) > char_limit:
                 raw_content = raw_content[:char_limit] + "... [truncated]"
             formatted_text += f"Full source content limited to {max_tokens_per_source} tokens: {raw_content}\n\n"
-        formatted_text += f"{'='*80}\n\n"  # End section separator
+
+        formatted_text += f"{'=' * 80}\n\n"  # End section separator
 
     return formatted_text.strip()
 
@@ -162,16 +173,16 @@ def format_sections(sections: list[Section]) -> str:
     formatted_str = ""
     for idx, section in enumerate(sections, 1):
         formatted_str += f"""
-{'='*60}
+{"=" * 60}
 Section {idx}: {section.name}
-{'='*60}
+{"=" * 60}
 Description:
 {section.description}
 Requires Research: 
 {section.research}
 
 Content:
-{section.content if section.content else '[Not yet written]'}
+{section.content if section.content else "[Not yet written]"}
 
 """
     return formatted_str
@@ -338,7 +349,6 @@ def perplexity_search(search_queries):
 
     search_docs = []
     for query in search_queries:
-
         payload = {
             "model": "sonar-pro",
             "messages": [
@@ -1354,7 +1364,7 @@ async def scrape_pages(titles: List[str], urls: List[str]) -> str:
         formatted_output = "Search results: \n\n"
 
         for i, (title, url, page) in enumerate(zip(titles, urls, pages)):
-            formatted_output += f"\n\n--- SOURCE {i+1}: {title} ---\n"
+            formatted_output += f"\n\n--- SOURCE {i + 1}: {title} ---\n"
             formatted_output += f"URL: {url}\n\n"
             formatted_output += f"FULL CONTENT:\n {page}"
             formatted_output += "\n\n" + "-" * 80 + "\n"
@@ -1584,7 +1594,7 @@ async def tavily_search(
 
     # Format the unique results
     for i, (url, result) in enumerate(unique_results.items()):
-        formatted_output += f"\n\n--- SOURCE {i+1}: {result['title']} ---\n"
+        formatted_output += f"\n\n--- SOURCE {i + 1}: {result['title']} ---\n"
         formatted_output += f"URL: {url}\n\n"
         formatted_output += f"SUMMARY:\n{result['content']}\n\n"
         if result.get("raw_content"):
@@ -1627,7 +1637,7 @@ async def azureaisearch_search(
 
     # Format the unique results
     for i, (url, result) in enumerate(unique_results.items()):
-        formatted_output += f"\n\n--- SOURCE {i+1}: {result['title']} ---\n"
+        formatted_output += f"\n\n--- SOURCE {i + 1}: {result['title']} ---\n"
         formatted_output += f"URL: {url}\n\n"
         formatted_output += f"SUMMARY:\n{result['content']}\n\n"
         if result.get("raw_content"):
