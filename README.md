@@ -436,5 +436,6 @@ Follow the [quickstart](#-quickstart) to start LangGraph server locally.
  
 You can easily deploy to [LangGraph Platform](https://langchain-ai.github.io/langgraph/concepts/#deployment-options). 
 
-*Only one Groq-hosted model is currently supported. See <https://groq.com/pricing>.*
+\n*Only one Groq-hosted model is currently supported. See <https://groq.com/pricing>.
+
 
