@@ -39,11 +39,11 @@ This document enumerates every autonomous component in *Directed Deep Research* 
 
 | Agent                  | Responsibility                                   | Default LLM                     | Tool Access                  | Input Schema    | Output Schema          |
 | ---------------------- | ------------------------------------------------ | ------------------------------- | ---------------------------- | --------------- | ---------------------- |
-| **Planner**            | Break user prompt into sections & retrieval plan | `qwen3-8b-32768`(CoT mode)     | `tavily_search`, `crawl_url` | `TopicPrompt`   | `PlanJson`             |
-| **Researcher**         | Answer one section via surface-level search      | `qwen3-8b-32768` (CoT mode)     | `tavily_search`              | `SectionTask`   | `SectionDraft`         |
-| **ScraperAgent**       | Directed crawl of a specific URL → Markdown      | `qwen3-8b-32768`(CoT mode)     | `crawl_url`                  | `ScrapeRequest` | `ScrapeResult`         |
+| **Planner**            | Break user prompt into sections & retrieval plan | `qwen/qwen3-32b`(CoT mode)     | `tavily_search`, `crawl_url` | `TopicPrompt`   | `PlanJson`             |
+| **Researcher**         | Answer one section via surface-level search      | `qwen/qwen3-32b` (CoT mode)     | `tavily_search`              | `SectionTask`   | `SectionDraft`         |
+| **ScraperAgent**       | Directed crawl of a specific URL → Markdown      | `qwen/qwen3-32b`(CoT mode)     | `crawl_url`                  | `ScrapeRequest` | `ScrapeResult`         |
 | **Indexer / RAG**      | Chunk, embed & similarity search                 | – (Python)                      | internal                     | `MarkdownDocs`  | `ContextDocs`          |
-| **Writer**             | Compose intro, body & conclusion                 |`qwen3-8b-32768` (CoT mode)      | none                         | `CleanSections` | `MarkdownReport`       |
+| **Writer**             | Compose intro, body & conclusion                 |`qwen/qwen3-32b` (CoT mode)      | none                         | `CleanSections` | `MarkdownReport`       |
 | **Cleaner / Exporter** | Extract numeric data & write Excel               | – (Python)                    | `pandas`, `openpyxl`         | `RawFacts`      | `research_report.xlsx` |
 
 ---
@@ -51,7 +51,7 @@ This document enumerates every autonomous component in *Directed Deep Research* 
 ## 1 Planner
 
 * **Goal:** Parse the user’s topic into a JSON plan with section titles, objectives, and retrieval method (`search` or `scrape`).
-* **Model:** Groq `qwen3-8b-32768`, `temperature=0`, `top_p=0.9`.
+* **Model:** Groq `qwen/qwen3-32b`, `temperature=0`, `top_p=0.9`.
 * **Schemas:**
 
   ```python
@@ -71,7 +71,7 @@ This document enumerates every autonomous component in *Directed Deep Research* 
 * **Example:**
 
   ```python
-  planner = ChatGroq(model="qwen3-8b-32768") \
+  planner = ChatGroq(model="qwen/qwen3-32b") \
       .with_structured_output(PlanJson)
   plan = planner.invoke({"topic": "EU renewable energy subsidies 2010–2025"})
   ```
@@ -81,7 +81,7 @@ This document enumerates every autonomous component in *Directed Deep Research* 
 ## 2 Researcher
 
 * **Goal:** Produce a concise section draft using Tavily search and chain-of-thought reasoning.
-* **Model:** Groq `qwen3-8b-32768`, `temperature=0.2`.
+* **Model:** Groq `qwen/qwen3-32b`, `temperature=0.2`.
 * **Tool:** `tavily_search(query: str) -> List[Document]`
   ([Tavily PyPI / docs](https://pypi.org/project/tavily/))
 * **Prompt Skeleton:**
@@ -111,7 +111,7 @@ This document enumerates every autonomous component in *Directed Deep Research* 
 ## 3 ScraperAgent
 
 * **Goal:** Perform a directed crawl on a given URL and return clean Markdown.
-* **Model:** Groq `qwen3-8b-32768`
+* **Model:** Groq `qwen/qwen3-32b`
 * **Tool Definition:**
 
   ```python
@@ -153,7 +153,7 @@ This document enumerates every autonomous component in *Directed Deep Research* 
 ## 5 Writer
 
 * **Goal:** Assemble the final report’s introduction, body, and conclusion in a cohesive Markdown document.
-* **Model:** Groq `qwen3-8b-32768`, `temperature=0.3`.
+* **Model:** Groq `qwen/qwen3-32b`, `temperature=0.3`.
 * **Prompt:**
 
   ```
