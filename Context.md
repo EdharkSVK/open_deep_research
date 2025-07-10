@@ -11,7 +11,7 @@
 * **Always read `PLANNING.md`** at the start of a new conversation to understand the architecture, goals, style, and constraints.  
 * **Check `TASK.md`** before starting a new task. If the task isn’t listed, add it with a brief description and today’s date.  
 * Use the agent catalogue in `AGENTS.md` to understand role boundaries.  
-* Prefer **Groq’s `llama-3` 405 B** for planning, but lean on cheaper models (`mixtral-8x7B`, `llama-3-70B`) for high-fan-out execution.
+* All agents use **Groq's `qwen/qwen3-32b`**. Structured outputs rely on `.with_structured_output()`; no manual `response_format`.
 
 ---
 

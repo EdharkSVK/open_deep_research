@@ -133,11 +133,9 @@ You can customize the research assistant workflow through several parameters:
 - `report_structure`: Define a custom structure for your report (defaults to a standard research report format)
 - `number_of_queries`: Number of search queries to generate per section (default: 2)
 - `max_search_depth`: Maximum number of reflection and search iterations (default: 2)
-- `planner_provider`: Model provider for planning phase (default: "anthropic", but can be any provider from supported integrations with `init_chat_model` as listed [here](https://python.langchain.com/api_reference/langchain/chat_models/langchain.chat_models.base.init_chat_model.html))
-- `planner_model`: Specific model for planning (default: "claude-3-7-sonnet-latest")
+- `planner_model`: Specific model for planning (default: "qwen/qwen3-32b")
 - `planner_model_kwargs`: Additional parameter for planner_model
-- `writer_provider`: Model provider for writing phase (default: "anthropic", but can be any provider from supported integrations with `init_chat_model` as listed [here](https://python.langchain.com/api_reference/langchain/chat_models/langchain.chat_models.base.init_chat_model.html))
-- `writer_model`: Model for writing the report (default: "claude-3-5-sonnet-latest")
+- `writer_model`: Model for writing the report (default: "qwen/qwen3-32b")
 - `writer_model_kwargs`: Additional parameter for writer_model
 - `search_api`: API to use for web searches (default: "tavily", options include "perplexity", "exa", "arxiv", "pubmed", "linkup")
 
@@ -437,3 +435,6 @@ Follow the [quickstart](#-quickstart) to start LangGraph server locally.
 ### Hosted deployment
  
 You can easily deploy to [LangGraph Platform](https://langchain-ai.github.io/langgraph/concepts/#deployment-options). 
+
+*Only one Groq-hosted model is currently supported. See <https://groq.com/pricing>.*
+
