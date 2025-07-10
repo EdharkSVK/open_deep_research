@@ -2,10 +2,12 @@
 set -euo pipefail
 
 # venv
+
 if [ -z "${VIRTUAL_ENV:-}" ]; then
     python3 -m venv .venv
     source .venv/bin/activate
 fi
+
 
 # load .env
 export $(grep -v '^#' .env | xargs)

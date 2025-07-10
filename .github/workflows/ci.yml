@@ -17,7 +17,9 @@ jobs:
           pip install pytest ruff black
       - name: Auto-format & lint-fix
         run: |
+          ruff check . --fix
           black .
+
           ruff check . --fix
       - run: ruff check .
       - run: black --check .

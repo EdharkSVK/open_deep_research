@@ -100,6 +100,7 @@ def get_search_params(
     }
 
 
+
 def deduplicate_and_format_sources(
     search_response,
     max_tokens_per_source=5000,
@@ -161,6 +162,7 @@ def deduplicate_and_format_sources(
             if len(raw_content) > char_limit:
                 raw_content = raw_content[:char_limit] + "... [truncated]"
             formatted_text += f"Full source content limited to {max_tokens_per_source} tokens: {raw_content}\n\n"
+
         formatted_text += f"{'=' * 80}\n\n"  # End section separator
 
     return formatted_text.strip()
@@ -1796,3 +1798,4 @@ async def load_mcp_server_config(path: str) -> dict:
 
     config = await asyncio.to_thread(_load)
     return config
+

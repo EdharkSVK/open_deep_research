@@ -73,7 +73,9 @@ lint.select = [
     "UP",
 ]
 extend-exclude = ["*.ipynb"]
+
 line-length = 120
+
 lint.ignore = [
     "UP006",
     "UP007",

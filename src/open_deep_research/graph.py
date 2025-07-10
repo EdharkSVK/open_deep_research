@@ -184,9 +184,11 @@ def human_feedback(
     feedback = interrupt(interrupt_message)
 
     if isinstance(feedback, dict):
+
         feedback_val = feedback.get("feedback", feedback.get("value"))
     else:
         feedback_val = feedback
+
 
     if isinstance(feedback_val, str):
         raw_lower = feedback_val.strip().lower()
@@ -195,11 +197,13 @@ def human_feedback(
         elif raw_lower == "false":
             feedback_val = False
 
+
     if feedback_val is True:
         if not any(s.research for s in sections):
             return Command(
                 goto="gather_completed_sections", update={"completed_sections": []}
             )
+
         return Command(
             goto=[
                 Send(
@@ -221,6 +225,8 @@ def human_feedback(
         goto="generate_report_plan",
         update={"feedback_on_report_plan": ["(no feedback)"]},
     )
+
+
 
 
 async def generate_queries(state: SectionState, config: RunnableConfig):

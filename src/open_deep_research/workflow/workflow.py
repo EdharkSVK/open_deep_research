@@ -190,6 +190,7 @@ async def human_feedback(
 ) -> Command[Literal["generate_report_plan", "build_section_with_web_research"]]:
     """Get human feedback on the report plan and route accordingly."""
 
+
     messages = state["messages"]
     sections = state["sections"]
     sections_str = "\n\n".join(
@@ -209,7 +210,9 @@ async def human_feedback(
     feedback = interrupt(interrupt_message)
 
     if isinstance(feedback, dict):
+
         feedback_val = feedback.get("feedback", feedback.get("value"))
+
     else:
         feedback_val = feedback
 
