@@ -28,6 +28,7 @@ wheels/
 venv/
 env/
 ENV/
+.venv/
 .env
 
 # IDE specific files
@@ -65,6 +66,8 @@ node_modules/
 # Temporary files
 tmp/
 temp/
+
+ngrok.yml
 
 .langgraph_api
 /open_deep_research/

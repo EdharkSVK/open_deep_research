@@ -12,13 +12,13 @@ jobs:
       - run: |
           pip install --upgrade pip
           pip install -e .
-          pip install playwright
+          pip install tavily-python playwright
           playwright install --with-deps
           pip install pytest ruff black
       - name: Auto-format & lint-fix
         run: |
           black .
-          ruff --fix .
+          ruff check . --fix
       - run: ruff check .
       - run: black --check .
       - run: pytest -q
