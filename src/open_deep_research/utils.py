@@ -1808,7 +1808,7 @@ async def load_mcp_server_config(path: str) -> dict:
     """Load MCP server configuration from a file."""
 
     def _load():
-        with open(path, "r") as f:
+        with open(path) as f:
             config = json.load(f)
         return config
 

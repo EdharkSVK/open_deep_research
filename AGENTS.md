@@ -221,3 +221,4 @@ flowchart TD
 
 ```
 ```
+\n*Only one Groq-hosted model is currently supported. See <https://groq.com/pricing>.*
